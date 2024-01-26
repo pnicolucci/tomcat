@@ -106,6 +106,7 @@
 
   <!-- Jakarta EE 11 platform requires Java 21+ -->
   <!-- Keep in sync with webapps/docs/tomcat-docs.xsl -->
+  <property name="compile.expressionLanguage.release" value="17"/>
   <property name="compile.release" value="21"/>
   <property name="min.java.version" value="21"/>
   <property name="build.java.version" value="21"/>
@@ -999,6 +1000,23 @@
   </target>
 
   <target name="compile" depends="download-compile,validate">
+  
+    <!-- Compile the Expression Language to Java 17 bytecode. -->
+    <javac srcdir="java" destdir="${tomcat.classes}"
+           debug="${compile.debug}"
+           deprecation="${compile.deprecation}"
+           release="${compile.expressionLanguage.release}"
+           encoding="ISO-8859-1"
+           includeAntRuntime="true" >
+      <!-- Uncomment this to show unchecked warnings:
+      <compilerarg value="-Xlint:unchecked"/>
+      -->
+      <!-- Only compile the Expression Language-->
+      <classpath refid="compile.classpath" />
+      <include name="jakarta/el/**"/>
+      <include name="org/apache/jasper/el/**"/>
+    </javac>
+
     <!-- Compile internal server components -->
     <javac srcdir="java" destdir="${tomcat.classes}"
            debug="${compile.debug}"
@@ -1030,6 +1048,10 @@
       <classpath refid="compile.classpath" />
       <include name="org/apache/tomcat/util/net/openssl/panama/**"/>
       <include name="org/apache/tomcat/util/openssl/**"/>
+
+      <!-- Exclude the Expression Language as it was built already. -->
+      <exclude name="jakarta/el/**"/>
+      <exclude name="org/apache/jasper/el/**"/>
     </javac>
     <!-- Copy static resource files -->
     <copy todir="${tomcat.classes}" encoding="UTF-8">
